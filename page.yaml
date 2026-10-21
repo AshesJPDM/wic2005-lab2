@@ -1,0 +1,58 @@
+# page.yaml: the words on your page, kept as data like everything else.
+# make_page.py puts each answer under its question. A few sentences each, in your own words;
+# leave a blank line between paragraphs. Refer to YOUR network and YOUR evidence.
+# Never put your name or full student ID here: the page is public.
+
+repository: https://github.com/AshesJPDM/wic2005-lab2
+
+answers:
+  planes:
+    question: "Where are the data, control and management planes in your network?"
+    answer: >
+      In our network, the data plane resides inside the Linux kernel bridges (s1, s2, s3) and the virtual ethernet interfaces (veth pairs). It handles high-speed frame forwarding and packet switching in hardware/kernel space based on the learned forwarding database (FDB).
+
+      The control plane is distributed and embedded within the Linux bridge MAC learning logic and the host network stacks handling ARP and IPv6 Neighbor Discovery (ND). Because our build script specifies controller=None, there is no centralized SDN controller; forwarding tables are populated autonomously via local data-plane observation.
+
+      The management plane consists of our automation scripts (build_topo.py, make_page.py), the YAML data definitions (topology.yaml, page.yaml), and the Mininet interactive CLI. This plane defines the desired network topology, runs validation checks, and provisions the devices.
+
+  learning:
+    question: "How did your switches learn which port leads to each host? Use your MAC table evidence."
+    answer: >
+      Our switches learned port mappings dynamically through classical backward learning by inspecting the source MAC address of incoming Ethernet frames transmitted during the pingall sweep and neighbor discovery.
+
+      As captured in our evidence/macs.txt, switch s1 inspected ingress frames on each bridge port and recorded the source MAC addresses into its forwarding table. Local bridge ports are flagged with "is local? yes", whereas external hosts like h1 and h2 are mapped to their respective virtual interface ports. Furthermore, frames arriving from hosts attached to s2 and s3 (such as h3 through h6) were learned on the inter-switch trunk port connecting s1 to s2, allowing s1 to seamlessly forward traffic destined for remote hosts across switch boundaries.
+
+  kind:
+    question: "Which of the four kinds of programmability is this assignment (a network described as data, then built and documented by scripts)? Why isn't it any of the other three?"
+    answer: >
+      This assignment represents management-plane programmability (often referred to as configuration management or Infrastructure-as-Data). The network's intended topology, device inventories, and addressing schemes are declared as structured data, which external automation scripts parse, validate, and instantiate.
+
+      It is not control-plane programmability because we do not deploy an SDN controller to dynamically compute flow tables or direct packet routing at runtime. It is not data-plane programmability because we do not modify the packet processing pipeline or write custom packet headers/parsers using languages like P4. Finally, it is not telemetry/closed-loop programmability because the scripts do not stream real-time operational metrics to autonomously reconfigure the network in response to traffic conditions.
+
+  two_am:
+    question: "Week 1's 2 a.m. change on 40 switches: what would be different if those switches were described like your network?"
+    answer: >
+      If those 40 switches were described as data in a version-controlled repository, network engineers would never have to manually log into 40 separate CLIs late at night to apply repetitive, error-prone commands.
+
+      Instead, the configuration change would be declared once in a structured file, validated beforehand by automated check functions to prevent syntax and address errors, and peer-reviewed through a pull request during normal business hours. Applying the change would be a single idempotent script execution across all 40 devices simultaneously. If an anomaly occurred, the entire network could be rolled back to the last known-good commit within seconds via Git.
+
+  model:
+    question: "What's the difference between your network's data model and its serialisation? Use YAML and JSON as the example."
+    answer: >
+      A data model represents the abstract structure, entities, relationships, and constraints of information—in our case, the specification that a network consists of switches, hosts with IPv4 and IPv6 addresses, and bidirectional links connecting valid nodes.
+
+      Serialisation is simply the specific syntax used to encode that abstract data model into a stream of characters for storage or transmission. Both topology.yaml and topology.json represent the exact same topology data model; Mininet constructs an identical network from either file. However, converting YAML to JSON completely stripped the comments (# ...) because comments are a syntax feature of YAML's serialisation format rather than an element of the network data model itself.
+
+  check:
+    question: "Why is it better to catch bad data in check() than with pingall? What did IPv6 notice about a duplicate address that IPv4 didn't?"
+    answer: >
+      Catching bad data in check() provides pre-flight static verification that guarantees semantic correctness before any physical or virtual resource is provisioned. In contrast, pingall only tests reachability dynamically after deployment, where duplicate IPv4 addresses result in non-deterministic ARP race conditions that deceptively report partial success (11/12 replies), masking severe routing conflicts.
+
+      When duplicate addresses were injected, IPv6's built-in Duplicate Address Detection (DAD) protocol detected the conflict via ICMPv6 Neighbor Solicitations and marked the offending interface as dadfailed in evidence/dad.txt, disabling the address to prevent network disruption. Legacy IPv4 lacked automatic host-level collision detection and silently accepted the conflicting IP.
+
+  git:
+    question: "What does your Git history give you that copying files into folders named topology-v2-final wouldn't?"
+    answer: >
+      Our Git history provides a line-by-line, semantic diff (git diff) of changes rather than crude, manual directory comparisons. Every change is immutably linked to an author, a precise timestamp, and a descriptive commit message explaining why the modification was made.
+
+      Unlike arbitrary folder copies such as 'topology-v2-final', Git provides a verifiable audit trail, branching workflows for safe testing without disturbing the production branch, and instant, reliable rollback capabilities to any previous commit whenever an outage occurs.

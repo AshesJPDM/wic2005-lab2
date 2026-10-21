@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Network 3161: built from data</title>
+<style>
+  body { font-family: system-ui, sans-serif; max-width: 52rem; margin: 2rem auto; padding: 0 1rem; line-height: 1.55; color: #1f2937; }
+  h1 { font-size: 1.6rem; margin-bottom: .2rem; } h2 { margin-top: 2.2rem; border-bottom: 1px solid #e5e7eb; }
+  table { border-collapse: collapse; width: 100%; font-size: .92rem; } th, td { border-bottom: 1px solid #e5e7eb; padding: .35rem .5rem; text-align: left; }
+  pre { background: #111827; color: #f3f4f6; padding: .8rem; border-radius: .4rem; overflow-x: auto; font-size: .82rem; }
+  pre.mermaid { background: none; color: inherit; } pre.missing { background: #fef2f2; color: #991b1b; }
+  .meta, .file { color: #6b7280; font-size: .85rem; } code { font-size: .88em; }
+</style>
+</head>
+<body>
+<h1>My network, built from data</h1>
+<p class="meta">Student ID ending 3161 · generated from <code>topology.yaml</code> by <code>make_page.py</code> on 2026-10-21</p>
+<p id="summary">3 switches, 6 hosts and 8 links, on IPv4 <code>10.61.0.0/16</code> and IPv6 <code>fd00:3161::/32</code>.
+The same file builds this network in Mininet and generates this page.</p>
+<p>Repository: <a id="repository" href="https://github.com/AshesJPDM/wic2005-lab2">https://github.com/AshesJPDM/wic2005-lab2</a></p>
+
+<h2>The network</h2>
+<section id="hosts"><table><thead><tr><th>Host</th><th>IPv4</th><th>IPv6</th><th>Switch</th></tr></thead><tbody><tr><td>h1</td><td><code>10.61.0.1/24</code></td><td><code>fd00:3161::1/64</code></td><td>s1</td></tr><tr><td>h2</td><td><code>10.61.0.2/24</code></td><td><code>fd00:3161::2/64</code></td><td>s1</td></tr><tr><td>h3</td><td><code>10.61.0.3/24</code></td><td><code>fd00:3161::3/64</code></td><td>s2</td></tr><tr><td>h4</td><td><code>10.61.0.4/24</code></td><td><code>fd00:3161::4/64</code></td><td>s2</td></tr><tr><td>h5</td><td><code>10.61.0.5/24</code></td><td><code>fd00:3161::5/64</code></td><td>s3</td></tr><tr><td>h6</td><td><code>10.61.0.6/24</code></td><td><code>fd00:3161::6/64</code></td><td>s3</td></tr></tbody></table></section>
+<h3>Links</h3>
+<section id="links"><ul>
+  <li><code>h1</code> &mdash; <code>s1</code></li>
+  <li><code>h2</code> &mdash; <code>s1</code></li>
+  <li><code>h3</code> &mdash; <code>s2</code></li>
+  <li><code>h4</code> &mdash; <code>s2</code></li>
+  <li><code>h5</code> &mdash; <code>s3</code></li>
+  <li><code>h6</code> &mdash; <code>s3</code></li>
+  <li><code>s1</code> &mdash; <code>s2</code></li>
+  <li><code>s2</code> &mdash; <code>s3</code></li>
+</ul></section>
+<h3>Diagram</h3>
+<pre class="mermaid" id="diagram">graph LR
+    h1 --- s1
+    h2 --- s1
+    h3 --- s2
+    h4 --- s2
+    h5 --- s3
+    h6 --- s3
+    s1 --- s2
+    s2 --- s3</pre>
+
+<h2>Evidence from the running network</h2>
+<section id="evidence"><h3>pingall: every host reaches every other</h3>
+<p class="file">evidence/pingall.txt</p>
+<pre id="evidence-pingall">*** Ping: testing ping reachability
+h1 -&gt; h2 h3 h4 h5 h6
+h2 -&gt; h1 h3 h4 h5 h6
+h3 -&gt; h1 h2 h4 h5 h6
+h4 -&gt; h1 h2 h3 h5 h6
+h5 -&gt; h1 h2 h3 h4 h6
+h6 -&gt; h1 h2 h3 h4 h5
+*** Results: 0% dropped (30/30 received)</pre>
+<h3>h1&#x27;s neighbour table: ARP and Neighbour Discovery</h3>
+<p class="file">evidence/neigh.txt</p>
+<pre id="evidence-neigh">10.61.0.2 dev h1-eth0 lladdr 00:00:00:00:00:02 REACHABLE 
+10.61.0.3 dev h1-eth0 lladdr 00:00:00:00:00:03 REACHABLE 
+10.61.0.6 dev h1-eth0 lladdr 00:00:00:00:00:06 REACHABLE 
+10.61.0.4 dev h1-eth0 lladdr 00:00:00:00:00:04 REACHABLE 
+10.61.0.5 dev h1-eth0 lladdr 00:00:00:00:00:05 REACHABLE 
+fd00:3161::2 dev h1-eth0 lladdr 00:00:00:00:00:02 REACHABLE 
+fe80::200:ff:fe00:2 dev h1-eth0 lladdr 00:00:00:00:00:02 DELAY</pre>
+<h3>What a switch&#x27;s data plane learned: brctl showmacs</h3>
+<p class="file">evidence/macs.txt</p>
+<pre id="evidence-macs">port no	mac addr		is local?	ageing timer
+  1	00:00:00:00:00:01	no		   2.44
+  2	00:00:00:00:00:02	no		   0.91
+  3	00:00:00:00:00:03	no		  13.70
+  3	00:00:00:00:00:04	no		   1.93
+  3	00:00:00:00:00:05	no		  13.71
+  3	00:00:00:00:00:06	no		  13.70
+  3	16:66:c3:13:22:1c	no		  13.70
+  3	16:a5:1a:a8:53:59	no		  14.99
+  3	32:1c:48:ea:99:64	yes		   0.00
+  3	32:1c:48:ea:99:64	yes		   0.00
+  2	4a:be:05:02:83:a0	yes		   0.00
+  2	4a:be:05:02:83:a0	yes		   0.00
+  1	66:34:3d:3b:1f:c5	yes		   0.00
+  1	66:34:3d:3b:1f:c5	yes		   0.00
+  3	7a:3b:3c:79:9d:01	no		  14.99
+  3	7a:eb:ee:a6:c4:6a	no		   0.14</pre>
+<h3>A duplicate address: IPv6 notices, IPv4 doesn&#x27;t</h3>
+<p class="file">evidence/dad.txt</p>
+<pre id="evidence-dad">2: h2-eth0@if61: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu 1500 qdisc noqueue state UP group default qlen 1000 link-netnsid 0
+    inet6 fd00:3161::1/64 scope global dadfailed tentative 
+       valid_lft forever preferred_lft forever
+    inet6 fd00:3161::2/64 scope global 
+       valid_lft forever preferred_lft forever
+    inet6 fe80::200:ff:fe00:2/64 scope link 
+       valid_lft forever preferred_lft forever
+2: h2-eth0@if61: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu 1500 qdisc noqueue state UP group default qlen 1000 link-netnsid 0
+    inet 10.61.0.2/24 brd 10.61.0.255 scope global h2-eth0
+       valid_lft forever preferred_lft forever
+    inet 10.61.0.1/24 scope global secondary h2-eth0
+       valid_lft forever preferred_lft forever</pre>
+<h3>check() stopping bad data before it&#x27;s built</h3>
+<p class="file">evidence/check.txt</p>
+<pre id="evidence-check">PROBLEM: h4 and h2 both use 10.61.0.2
+PROBLEM: h4 and h2 both use fd00:3161::2
+PROBLEM: link refers to unknown node &#x27;s9&#x27;
+Fix the description and try again.</pre></section>
+
+<h2>What I learned</h2>
+<section id="answers"><section id="answer-planes"><h3>Where are the data, control and management planes in your network?</h3><p>In our network, the data plane resides inside the Linux kernel bridges (s1, s2, s3) and the virtual ethernet interfaces (veth pairs). It handles high-speed frame forwarding and packet switching in hardware/kernel space based on the learned forwarding database (FDB).
+The control plane is distributed and embedded within the Linux bridge MAC learning logic and the host network stacks handling ARP and IPv6 Neighbor Discovery (ND). Because our build script specifies controller=None, there is no centralized SDN controller; forwarding tables are populated autonomously via local data-plane observation.
+The management plane consists of our automation scripts (build_topo.py, make_page.py), the YAML data definitions (topology.yaml, page.yaml), and the Mininet interactive CLI. This plane defines the desired network topology, runs validation checks, and provisions the devices.</p></section>
+<section id="answer-learning"><h3>How did your switches learn which port leads to each host? Use your MAC table evidence.</h3><p>Our switches learned port mappings dynamically through classical backward learning by inspecting the source MAC address of incoming Ethernet frames transmitted during the pingall sweep and neighbor discovery.
+As captured in our evidence/macs.txt, switch s1 inspected ingress frames on each bridge port and recorded the source MAC addresses into its forwarding table. Local bridge ports are flagged with &quot;is local? yes&quot;, whereas external hosts like h1 and h2 are mapped to their respective virtual interface ports. Furthermore, frames arriving from hosts attached to s2 and s3 (such as h3 through h6) were learned on the inter-switch trunk port connecting s1 to s2, allowing s1 to seamlessly forward traffic destined for remote hosts across switch boundaries.</p></section>
+<section id="answer-kind"><h3>Which of the four kinds of programmability is this assignment (a network described as data, then built and documented by scripts)? Why isn&#x27;t it any of the other three?</h3><p>This assignment represents management-plane programmability (often referred to as configuration management or Infrastructure-as-Data). The network&#x27;s intended topology, device inventories, and addressing schemes are declared as structured data, which external automation scripts parse, validate, and instantiate.
+It is not control-plane programmability because we do not deploy an SDN controller to dynamically compute flow tables or direct packet routing at runtime. It is not data-plane programmability because we do not modify the packet processing pipeline or write custom packet headers/parsers using languages like P4. Finally, it is not telemetry/closed-loop programmability because the scripts do not stream real-time operational metrics to autonomously reconfigure the network in response to traffic conditions.</p></section>
+<section id="answer-two_am"><h3>Week 1&#x27;s 2 a.m. change on 40 switches: what would be different if those switches were described like your network?</h3><p>If those 40 switches were described as data in a version-controlled repository, network engineers would never have to manually log into 40 separate CLIs late at night to apply repetitive, error-prone commands.
+Instead, the configuration change would be declared once in a structured file, validated beforehand by automated check functions to prevent syntax and address errors, and peer-reviewed through a pull request during normal business hours. Applying the change would be a single idempotent script execution across all 40 devices simultaneously. If an anomaly occurred, the entire network could be rolled back to the last known-good commit within seconds via Git.</p></section>
+<section id="answer-model"><h3>What&#x27;s the difference between your network&#x27;s data model and its serialisation? Use YAML and JSON as the example.</h3><p>A data model represents the abstract structure, entities, relationships, and constraints of information—in our case, the specification that a network consists of switches, hosts with IPv4 and IPv6 addresses, and bidirectional links connecting valid nodes.
+Serialisation is simply the specific syntax used to encode that abstract data model into a stream of characters for storage or transmission. Both topology.yaml and topology.json represent the exact same topology data model; Mininet constructs an identical network from either file. However, converting YAML to JSON completely stripped the comments (# ...) because comments are a syntax feature of YAML&#x27;s serialisation format rather than an element of the network data model itself.</p></section>
+<section id="answer-check"><h3>Why is it better to catch bad data in check() than with pingall? What did IPv6 notice about a duplicate address that IPv4 didn&#x27;t?</h3><p>Catching bad data in check() provides pre-flight static verification that guarantees semantic correctness before any physical or virtual resource is provisioned. In contrast, pingall only tests reachability dynamically after deployment, where duplicate IPv4 addresses result in non-deterministic ARP race conditions that deceptively report partial success (11/12 replies), masking severe routing conflicts.
+When duplicate addresses were injected, IPv6&#x27;s built-in Duplicate Address Detection (DAD) protocol detected the conflict via ICMPv6 Neighbor Solicitations and marked the offending interface as dadfailed in evidence/dad.txt, disabling the address to prevent network disruption. Legacy IPv4 lacked automatic host-level collision detection and silently accepted the conflicting IP.</p></section>
+<section id="answer-git"><h3>What does your Git history give you that copying files into folders named topology-v2-final wouldn&#x27;t?</h3><p>Our Git history provides a line-by-line, semantic diff (git diff) of changes rather than crude, manual directory comparisons. Every change is immutably linked to an author, a precise timestamp, and a descriptive commit message explaining why the modification was made.
+Unlike arbitrary folder copies such as &#x27;topology-v2-final&#x27;, Git provides a verifiable audit trail, branching workflows for safe testing without disturbing the production branch, and instant, reliable rollback capabilities to any previous commit whenever an outage occurs.</p></section></section>
+
+<script type="application/json" id="topology-data">{
+  "student_id_last4": "3161",
+  "switches": [
+    "s1",
+    "s2",
+    "s3"
+  ],
+  "hosts": [
+    {
+      "name": "h1",
+      "ip": "10.61.0.1/24",
+      "ipv6": "fd00:3161::1/64"
+    },
+    {
+      "name": "h2",
+      "ip": "10.61.0.2/24",
+      "ipv6": "fd00:3161::2/64"
+    },
+    {
+      "name": "h3",
+      "ip": "10.61.0.3/24",
+      "ipv6": "fd00:3161::3/64"
+    },
+    {
+      "name": "h4",
+      "ip": "10.61.0.4/24",
+      "ipv6": "fd00:3161::4/64"
+    },
+    {
+      "name": "h5",
+      "ip": "10.61.0.5/24",
+      "ipv6": "fd00:3161::5/64"
+    },
+    {
+      "name": "h6",
+      "ip": "10.61.0.6/24",
+      "ipv6": "fd00:3161::6/64"
+    }
+  ],
+  "links": [
+    [
+      "h1",
+      "s1"
+    ],
+    [
+      "h2",
+      "s1"
+    ],
+    [
+      "h3",
+      "s2"
+    ],
+    [
+      "h4",
+      "s2"
+    ],
+    [
+      "h5",
+      "s3"
+    ],
+    [
+      "h6",
+      "s3"
+    ],
+    [
+      "s1",
+      "s2"
+    ],
+    [
+      "s2",
+      "s3"
+    ]
+  ]
+}</script>
+<script type="module">
+  import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs";
+  mermaid.initialize({ startOnLoad: true });
+</script>
+</body>
+</html>
