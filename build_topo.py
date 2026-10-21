@@ -57,9 +57,18 @@ def check(spec):
     Week 2 task: report any IP address that is used by more than one host.
     """
     problems = []
-    # TODO: your code here
+    seen = {}
+    for host in spec.get("hosts", []):
+        h_name = host["name"]
+        for key in ("ip", "ipv6"):
+            if key in host:
+                # 去掉子网掩码 /24 或 /64，只取纯 IP 进行比对
+                addr = host[key].split("/")[0]
+                if addr in seen:
+                    problems.append(f"{h_name} and {seen[addr]} both use {addr}")
+                else:
+                    seen[addr] = h_name
     return problems
-
 
 def build(spec):
     """Turn the description into a Mininet network: switches, then hosts, then links."""
