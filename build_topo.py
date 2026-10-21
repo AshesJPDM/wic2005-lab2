@@ -54,22 +54,37 @@ def check_mine(spec):
 def check(spec):
     """Return a list of problems in the description (an empty list means it looks fine).
 
-    Week 2 task: report any IP address that is used by more than one host.
+    Week 2 task: report any IP address that is used by more than one host,
+    and verify that both endpoints of every link exist.
     """
     problems = []
-    seen = {}
+
+    valid_nodes = set()
+    for sw in spec.get("switches", []):
+        valid_nodes.add(sw if isinstance(sw, str) else sw.get("name"))
+    for h in spec.get("hosts", []):
+        valid_nodes.add(h.get("name"))
+
+    seen_ips = {}
     for host in spec.get("hosts", []):
         h_name = host["name"]
         for key in ("ip", "ipv6"):
             if key in host:
-                # 去掉子网掩码 /24 或 /64，只取纯 IP 进行比对
                 addr = host[key].split("/")[0]
-                if addr in seen:
-                    problems.append(f"{h_name} and {seen[addr]} both use {addr}")
+                if addr in seen_ips:
+                    problems.append(f"{h_name} and {seen_ips[addr]} both use {addr}")
                 else:
-                    seen[addr] = h_name
-    return problems
+                    seen_ips[addr] = h_name
 
+    for link in spec.get("links", []):
+        if len(link) >= 2:
+            u, v = link[0], link[1]
+            if u not in valid_nodes:
+                problems.append(f"link refers to unknown node '{u}'")
+            if v not in valid_nodes:
+                problems.append(f"link refers to unknown node '{v}'")
+
+    return problems
 def build(spec):
     """Turn the description into a Mininet network: switches, then hosts, then links."""
     net = Mininet(switch=LinuxBridge, controller=None, autoSetMacs=True)
